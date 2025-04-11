@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   const config = ramConfig[ram] || { ram: 1000, disk: 1000, cpu: 40 };
   const domain = 'https://cloud.bagusx.biz.id';
-  const apikey = 'ptla_PYG794IGuSK5ihaT30rtZnyHlxhBjLKEhSqtQoDORGD';
+  const apikey = 'ptla_s8coZy399fKPPRysDDg7xxJE3y43OngG421yDzjEiSS';
 
   try {
     const createUser = await fetch(`${domain}/api/application/users`, {
