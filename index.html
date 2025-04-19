@@ -4,33 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Top Up Panel</title>
-  <style>
-    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, select, button { width: 100%; padding: 8px; margin-top: 5px; }
-    #status { margin-top: 20px; font-weight: bold; }
-    #qris-img { margin-top: 15px; width: 300px; display: none; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Top-Up Panel</h2>
-  <form id="panelForm">
-    <label>Username:</label>
-    <input name="username" required />
-    <label>Email:</label>
-    <input name="email" type="email" required />
-    <label>RAM:</label>
-    <select name="ram" required>
-      <option value="1gb">1 GB</option>
-      <option value="2gb">2 GB</option>
-      <option value="3gb">3 GB</option>
-      <option value="4gb">4 GB</option>
-    </select>
-    <button type="submit">Bayar Sekarang</button>
-  </form>
+  <div class="container">
+    <h2>Top-Up Panel</h2>
+    <form id="panelForm">
+      <label>Username:</label>
+      <input name="username" required />
+      <label>Email:</label>
+      <input name="email" type="email" required />
+      <label>RAM:</label>
+      <select name="ram" required>
+        <option value="1gb">1 GB</option>
+        <option value="2gb">2 GB</option>
+        <option value="3gb">3 GB</option>
+        <option value="4gb">4 GB</option>
+      </select>
+      <button type="submit">Bayar Sekarang</button>
+    </form>
 
-  <p id="status"></p>
-  <img id="qris-img" src="" alt="QRIS" />
+    <p id="status"></p>
+    <img id="qris-img" src="" alt="QRIS" />
+  </div>
 
   <script>
     const form = document.getElementById('panelForm');
