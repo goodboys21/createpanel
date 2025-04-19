@@ -1,37 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buat Panel</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Top Up Panel</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { width: 100%; padding: 8px; margin-top: 5px; }
+    #status { margin-top: 20px; font-weight: bold; }
+    #qris-img { margin-top: 15px; width: 300px; display: none; }
+  </style>
 </head>
 <body>
-  <h2>Buat Panel Pterodactyl</h2>
+  <h2>Top-Up Panel</h2>
   <form id="panelForm">
-    <input type="text" name="username" placeholder="Username" required /><br>
-    <input type="email" name="email" placeholder="Email Tujuan" required /><br>
+    <label>Username:</label>
+    <input name="username" required />
+    <label>Email:</label>
+    <input name="email" type="email" required />
+    <label>RAM:</label>
     <select name="ram" required>
-      <option value="1gb">1GB</option>
-      <option value="2gb">2GB</option>
-      <option value="3gb">3GB</option>
-      <option value="4gb">4GB</option>
-    </select><br>
-    <button type="submit">Create</button>
+      <option value="1gb">1 GB</option>
+      <option value="2gb">2 GB</option>
+      <option value="3gb">3 GB</option>
+      <option value="4gb">4 GB</option>
+    </select>
+    <button type="submit">Bayar Sekarang</button>
   </form>
-  <p id="result"></p>
+
+  <p id="status"></p>
+  <img id="qris-img" src="" alt="QRIS" />
+
   <script>
-    document.getElementById('panelForm').addEventListener('submit', async (e) => {
+    const form = document.getElementById('panelForm');
+    const statusEl = document.getElementById('status');
+    const qrisImg = document.getElementById('qris-img');
+    let transId = null;
+    let interval = null;
+
+    form.onsubmit = async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
+      const data = Object.fromEntries(new FormData(form));
+      statusEl.textContent = 'Memproses...';
+
       const res = await fetch('/api/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      const result = await res.text();
-      document.getElementById('result').innerText = result;
-    });
+      const json = await res.json();
+
+      if (json.status === 'WAITING_PAYMENT') {
+        statusEl.textContent = 'Silakan scan QRIS dan tunggu konfirmasi pembayaran...';
+        qrisImg.src = json.qris;
+        qrisImg.style.display = 'block';
+        transId = json.keyorkut;
+
+        interval = setInterval(async () => {
+          const check = await fetch(`/api/checkstatus?id=${transId}`);
+          const checkJson = await check.json();
+          if (checkJson.status === 'PAID') {
+            clearInterval(interval);
+            statusEl.textContent = 'Pembayaran diterima! Panel akan segera dikirim.';
+          }
+        }, 3000);
+      } else {
+        statusEl.textContent = json.message || 'Gagal memproses pembayaran.';
+      }
+    };
   </script>
 </body>
 </html>
