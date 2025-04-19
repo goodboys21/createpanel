@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   const apikey = 'new2025';
 
   try {
-    const fetchRes = await fetch(`https://restapi-v2.simplebot.my.id/orderkuota/cekstatus?apikey=${apikey}&merchant=${merchant}&keyorkut=${id}`);
+    const fetchRes = await fetch(`https://restapi-v2.simplebot.my.id/orderkuota/cekstatus?apikey=new2025&merchant=OK1175639&keyorkut=743958017445262451175639OKCTB801236BD77B93A08A8A589FA02A719A`);
     const json = await fetchRes.json();
 
     if (json.message === 'No transactions found.') {
