@@ -2,107 +2,21 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
   const { username, email, ram } = req.body;
 
-  const ramConfig = {
-    '1gb': { ram: 1000, disk: 1000, cpu: 40 },
-    '2gb': { ram: 2000, disk: 1000, cpu: 60 },
-    '3gb': { ram: 3000, disk: 2000, cpu: 80 },
-    '4gb': { ram: 4000, disk: 2000, cpu: 100 },
-  };
+  const hargaPerGB = 1000;
+  const ramGB = parseInt(ram.replace('gb', ''));
+  const amount = ramGB * hargaPerGB;
 
-  const config = ramConfig[ram] || { ram: 1000, disk: 1000, cpu: 40 };
-  const domain = 'https://cloud.bagusx.biz.id';
-  const apikey = 'ptla_s8coZy399fKPPRysDDg7xxJE3y43OngG421yDzjEiSS';
+  const codeqr = `00020101021226670016COM.NOBUBANK.WWW01189360050300000879140214057125036591790303UMI51440014ID.CO.QRIS.WWW0215ID20232646203860303UMI520448125303360540410005802ID5918GOODFM21+OK11756396008MINAHASA61059537162070703A016304D191`;
+  const paymentRes = await fetch(`https://restapi-v2.simplebot.my.id/orderkuota/createpayment?apikey=new2025&amount=${amount}&codeqr=${encodeURIComponent(codeqr)}`);
+  const paymentJson = await paymentRes.json();
 
-  try {
-    const createUser = await fetch(`${domain}/api/application/users`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apikey}`,
-      },
-      body: JSON.stringify({
-        email: `${username}@buy.guz`,
-        username,
-        first_name: username,
-        last_name: username,
-        language: 'en',
-        password: username + '2110'
-      })
-    });
-    const user = await createUser.json();
-    if (user.errors) return res.status(500).send('Gagal membuat user.');
-
-    const userId = user.attributes.id;
-    const egg = '15';
-    const loc = '2';
-    const getEgg = await fetch(`${domain}/api/application/nests/5/eggs/${egg}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${apikey}`
-      }
-    });
-    const eggData = await getEgg.json();
-
-    const createServer = await fetch(`${domain}/api/application/servers`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apikey}`,
-      },
-      body: JSON.stringify({
-        name: username,
-        user: userId,
-        egg: parseInt(egg),
-        docker_image: 'ghcr.io/parkervcp/yolks:nodejs_18',
-        startup: eggData.attributes.startup,
-        environment: {
-          INST: 'npm',
-          USER_UPLOAD: '0',
-          AUTO_UPDATE: '0',
-          CMD_RUN: 'npm start'
-        },
-        limits: {
-          memory: config.ram,
-          swap: 0,
-          disk: config.disk,
-          io: 500,
-          cpu: config.cpu
-        },
-        feature_limits: {
-          databases: 5,
-          backups: 5,
-          allocations: 5
-        },
-        deploy: {
-          locations: [parseInt(loc)],
-          dedicated_ip: false,
-          port_range: [],
-        }
-      })
-    });
-    const serverData = await createServer.json();
-    if (serverData.errors) return res.status(500).send('Gagal membuat server.');
-
-    // Kirim email
-    const message = `Username: ${username}\nPassword: ${username}2110\nLogin: ${domain}`;
-    const mailRes = await fetch(`https://goodsite.vercel.app/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: email,
-        subject: `Panel Anda Siap - ${username}`,
-        message: message
-      })
-    });
-
-    if (!mailRes.ok) return res.status(500).send('Gagal mengirim email');
-
-    res.status(200).send('✅ Panel berhasil dibuat dan email dikirim!');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('❌ Gagal membuat panel: ' + err.message);
+  if (!paymentJson.status || !paymentJson.result) {
+    return res.status(500).json({ message: 'Gagal membuat QRIS' });
   }
+
+  return res.status(200).json({
+    status: 'WAITING_PAYMENT',
+    qris: paymentJson.result.imageqris.url,
+    keyorkut: paymentJson.result.idtransaksi
+  });
 }
