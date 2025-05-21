@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     const userId = user.attributes.id;
     const egg = '15';
-    const loc = '2';
+    const loc = '1';
     const getEgg = await fetch(`${domain}/api/application/nests/5/eggs/${egg}`, {
       method: 'GET',
       headers: {
