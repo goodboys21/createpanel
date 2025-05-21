@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     if (user.errors) return res.status(500).send('Gagal membuat user.');
 
     const userId = user.attributes.id;
-    const egg = '15';
+    const egg = '23';
     const loc = '1';
     const getEgg = await fetch(`${domain}/api/application/nests/5/eggs/${egg}`, {
       method: 'GET',
