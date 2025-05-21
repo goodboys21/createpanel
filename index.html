@@ -1,70 +1,121 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Top Up Panel</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buat Panel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      flex-direction: column;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4e54c8;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #3b3fc1;
+    }
+
+    #result {
+      margin-top: 15px;
+      text-align: center;
+      color: #222;
+      font-weight: 500;
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 14px;
+      color: white;
+      opacity: 0;
+      animation: fadeInOut 2s infinite;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Top-Up Panel</h2>
-    <form id="panelForm">
-      <label>Username:</label>
-      <input name="username" required />
-      <label>Email:</label>
-      <input name="email" type="email" required />
-      <label>RAM:</label>
-      <select name="ram" required>
-        <option value="1gb">1 GB</option>
-        <option value="2gb">2 GB</option>
-        <option value="3gb">3 GB</option>
-        <option value="4gb">4 GB</option>
-      </select>
-      <button type="submit">Bayar Sekarang</button>
-    </form>
+  <form id="panelForm">
+    <h2>Buat Panel Pterodactyl</h2>
+    <input type="text" name="username" placeholder="Username" required />
+    <input type="email" name="email" placeholder="Email Tujuan" required />
+    <select name="ram" required>
+      <option value="" disabled selected>Pilih RAM</option>
+      <option value="1gb">Ram 1GB</option>
+      <option value="2gb">Ram 2GB</option>
+      <option value="3gb">Ram 3GB</option>
+      <option value="4gb">Ram 4GB</option>
+      <option value="5gb">Ram 5GB</option>
+    </select>
+    <button type="submit">Create</button>
+    <p id="result"></p>
+  </form>
 
-    <p id="status"></p>
-    <img id="qris-img" src="" alt="QRIS" />
-  </div>
+  <div class="footer">© 2025 | By Bagus Xixepen</div>
 
   <script>
-    const form = document.getElementById('panelForm');
-    const statusEl = document.getElementById('status');
-    const qrisImg = document.getElementById('qris-img');
-    let transId = null;
-    let interval = null;
-
-    form.onsubmit = async (e) => {
+    document.getElementById('panelForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
-      statusEl.textContent = 'Memproses...';
-
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
       const res = await fetch('/api/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      const json = await res.json();
-
-      if (json.status === 'WAITING_PAYMENT') {
-        statusEl.textContent = 'Silakan scan QRIS dan tunggu konfirmasi pembayaran...';
-        qrisImg.src = json.qris;
-        qrisImg.style.display = 'block';
-        transId = json.keyorkut;
-
-        interval = setInterval(async () => {
-          const check = await fetch(`/api/checkstatus?id=${transId}`);
-          const checkJson = await check.json();
-          if (checkJson.status === 'PAID') {
-            clearInterval(interval);
-            statusEl.textContent = 'Pembayaran diterima! Panel akan segera dikirim.';
-          }
-        }, 3000);
-      } else {
-        statusEl.textContent = json.message || 'Gagal memproses pembayaran.';
-      }
-    };
+      const result = await res.text();
+      document.getElementById('result').innerText = result;
+    });
   </script>
 </body>
 </html>
