@@ -1,8 +1,13 @@
 {
-  "cron": [
+  "version": 2,
+  "routes": [
     {
-      "path": "/api/deleteInactive",
-      "schedule": "0 */1 * * *"
+      "src": "/api/deleteserver",
+      "dest": "api/deleteInactive.js"
+    },
+    {
+      "src": "/api/deleteuser",
+      "dest": "api/deleteUser.js"
     }
   ]
 }
