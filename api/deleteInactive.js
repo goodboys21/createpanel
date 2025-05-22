@@ -5,41 +5,78 @@ export default async function handler(req, res) {
   const apikey = 'ptla_0RT7eiZh2VZVjHcMAMhD3SlYynsEU03iX3yf3iNhj5U';
 
   try {
-    // Ambil semua server
-    const serversRes = await fetch(`${domain}/api/application/servers`, {
+    const getServers = await fetch(`${domain}/api/application/servers`, {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${apikey}`,
         'Accept': 'application/json',
+        'Authorization': `Bearer ${apikey}`
       }
     });
-    const serversData = await serversRes.json();
-    const servers = serversData.data;
 
-    const now = new Date();
+    const { data: servers } = await getServers.json();
+    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+    const deletedUsers = new Set();
+    let deletedServers = 0;
+    let deletedUserCount = 0;
 
-    for (let server of servers) {
+    // Simpan ID user yang servernya dihapus
+    const userServerMap = {};
+
+    for (const server of servers) {
       const updatedAt = new Date(server.attributes.updated_at);
-      const diffMs = now - updatedAt;
-      const diffHours = diffMs / 1000 / 60 / 60;
+      const serverId = server.attributes.id;
+      const userId = server.attributes.user;
 
-      // Jika tidak aktif selama >5 jam
-      if (diffHours >= 5) {
-        const deleteRes = await fetch(`${domain}/api/application/servers/${server.attributes.id}/force`, {
+      // Simpan list server milik user
+      if (!userServerMap[userId]) userServerMap[userId] = [];
+      userServerMap[userId].push(serverId);
+
+      if (updatedAt < fiveHoursAgo) {
+        // Hapus server
+        await fetch(`${domain}/api/application/servers/${serverId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${apikey}`,
             'Accept': 'application/json'
           }
         });
-        if (!deleteRes.ok) {
-          console.error(`Gagal hapus server ${server.attributes.name}`);
-        }
+        deletedServers++;
+        console.log(`Server ${serverId} milik user ${userId} dihapus.`);
+
+        // Tandai user untuk dicek kemudian
+        deletedUsers.add(userId);
       }
     }
 
-    res.status(200).send('✅ Pemeriksaan selesai. Panel tidak aktif selama 5 jam telah dihapus.');
+    // Cek user yang servernya dihapus, apakah masih punya server lain
+    for (const userId of deletedUsers) {
+      // Cek ulang server aktif user tersebut
+      const check = await fetch(`${domain}/api/application/users/${userId}/servers`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apikey}`,
+          'Accept': 'application/json'
+        }
+      });
+      const checkData = await check.json();
+
+      if (!checkData.data || checkData.data.length === 0) {
+        // Hapus user kalau udah gak punya server
+        await fetch(`${domain}/api/application/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${apikey}`,
+            'Accept': 'application/json'
+          }
+        });
+        deletedUserCount++;
+        console.log(`User ${userId} dihapus karena tidak memiliki server.`);
+      }
+    }
+
+    res.status(200).send(`Selesai! ${deletedServers} server & ${deletedUserCount} user dihapus.`);
   } catch (err) {
     console.error(err);
-    res.status(500).send('❌ Gagal memeriksa panel: ' + err.message);
+    res.status(500).send('❌ Gagal hapus: ' + err.message);
   }
 }
