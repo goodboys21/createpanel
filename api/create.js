@@ -11,8 +11,8 @@ export default async function handler(req, res) {
   };
 
   const config = ramConfig[ram] || { ram: 1000, disk: 1000, cpu: 40 };
-  const domain = 'https://privat.otwbosmuda.web.id';
-  const apikey = 'ptla_0RT7eiZh2VZVjHcMAMhD3SlYynsEU03iX3yf3iNhj5U';
+  const domain = 'https://hafizxreva.xpanelprivate.my.id';
+  const apikey = 'ptla_EY3VRJxwHH7obTGeSSigTZmd00NoqiDjk5aNQ0u6n9A';
 
   try {
     const createUser = await fetch(`${domain}/api/application/users`, {
