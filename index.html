@@ -108,7 +108,7 @@
       e.preventDefault();
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
-      const res = await fetch('https://cpanellapii.btwo.my.id/api/create', {
+      const res = await fetch('https://api-bawok.btwo.my.id/api/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
